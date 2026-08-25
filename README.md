@@ -44,3 +44,7 @@ Set the DoH provider to:
 ```
 https://example.com/dns-query
 ```
+
+## References
+
+1. [Total ECH](https://github.com/RememberOurPromise/Total-ECH)
