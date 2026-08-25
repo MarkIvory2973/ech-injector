@@ -1,0 +1,14 @@
+{
+  "name": "ech-injector",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "go run github.com/syumai/workers/cmd/workers-assets-gen -mode=go && GOOS=js GOARCH=wasm go build -trimpath -ldflags=\"-s -w\" -o ./build/app.wasm .",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "start": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.125.0"
+  }
+}
