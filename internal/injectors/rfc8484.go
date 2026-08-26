@@ -21,19 +21,63 @@ func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	exists := false
-	for _, resourceRecord := range dnsAnwser.Answer {
-		https, ok := resourceRecord.(*dns.HTTPS)
-		if !ok {
-			continue
-		}
+	for _, question := range dnsQuestion.Question {
+		exists := false
+		for _, resourceRecord := range dnsAnwser.Answer {
+			https, ok := resourceRecord.(*dns.HTTPS)
+			if !ok {
+				continue
+			}
 
-		exists = true
+			exists = true
+
+			hasValidECHConfig := slices.ContainsFunc(https.Value, func(value dns.SVCBKeyValue) bool {
+				svcbECHConfig, ok := value.(*dns.SVCBECHConfig)
+				return ok && len(svcbECHConfig.ECH) != 0
+			})
+			if !hasValidECHConfig {
+				yes, err := cidrs.IsCloudflare(context, https.Hdr.Name)
+				if err != nil {
+					continue
+				}
+
+				if yes {
+					echConfig, err := getECHConfig(context, "cloudflare-ech.com.")
+					if err != nil {
+						return nil, err
+					}
+
+					value := &dns.SVCBECHConfig{
+						ECH: echConfig,
+					}
+					https.Value = append(https.Value, value)
+					continue
+				}
+
+				yes, err = cidrs.IsMeta(context, https.Hdr.Name)
+				if err != nil {
+					continue
+				}
+
+				if yes {
+					echConfig, err := base64.StdEncoding.DecodeString("AEj+DQBEAQAgACAdd+scUi0IYFsXnUIU7ko2Nd9+F8M26pAGZVpz/KrWPgAEAAEAAWQVZWNoLXB1YmxpYy5hdG1ldGEuY29tAAA=")
+					if err != nil {
+						return nil, err
+					}
+
+					value := &dns.SVCBECHConfig{
+						ECH: echConfig,
+					}
+					https.Value = append(https.Value, value)
+					continue
+				}
+			}
+		}
 
 		if !exists {
-			yes, err := cidrs.IsCloudflare(context, https.Hdr.Name)
+			yes, err := cidrs.IsCloudflare(context, question.Name)
 			if err != nil {
-				continue
+				return nil, err
 			}
 
 			if yes {
@@ -44,7 +88,7 @@ func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
 
 				resourceRecord := &dns.SVCB{
 					Hdr: dns.RR_Header{
-						Name:   https.Hdr.Name,
+						Name:   question.Name,
 						Rrtype: dns.TypeHTTPS,
 						Class:  dns.ClassINET,
 						Ttl:    300,
@@ -60,7 +104,7 @@ func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
 				dnsAnwser.Answer = append(dnsAnwser.Answer, resourceRecord)
 			}
 
-			yes, err = cidrs.IsMeta(context, https.Hdr.Name)
+			yes, err = cidrs.IsMeta(context, question.Name)
 			if err != nil {
 				continue
 			}
@@ -73,7 +117,7 @@ func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
 
 				resourceRecord := &dns.SVCB{
 					Hdr: dns.RR_Header{
-						Name:   https.Hdr.Name,
+						Name:   question.Name,
 						Rrtype: dns.TypeHTTPS,
 						Class:  dns.ClassINET,
 						Ttl:    300,
@@ -87,48 +131,6 @@ func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
 					},
 				}
 				dnsAnwser.Answer = append(dnsAnwser.Answer, resourceRecord)
-			}
-		}
-
-		hasValidECHConfig := slices.ContainsFunc(https.Value, func(value dns.SVCBKeyValue) bool {
-			svcbECHConfig, ok := value.(*dns.SVCBECHConfig)
-			return ok && len(svcbECHConfig.ECH) != 0
-		})
-		if !hasValidECHConfig {
-			yes, err := cidrs.IsCloudflare(context, https.Hdr.Name)
-			if err != nil {
-				continue
-			}
-
-			if yes {
-				echConfig, err := getECHConfig(context, "cloudflare-ech.com.")
-				if err != nil {
-					return nil, err
-				}
-
-				value := &dns.SVCBECHConfig{
-					ECH: echConfig,
-				}
-				https.Value = append(https.Value, value)
-				continue
-			}
-
-			yes, err = cidrs.IsMeta(context, https.Hdr.Name)
-			if err != nil {
-				continue
-			}
-
-			if yes {
-				echConfig, err := base64.StdEncoding.DecodeString("AEj+DQBEAQAgACAdd+scUi0IYFsXnUIU7ko2Nd9+F8M26pAGZVpz/KrWPgAEAAEAAWQVZWNoLXB1YmxpYy5hdG1ldGEuY29tAAA=")
-				if err != nil {
-					return nil, err
-				}
-
-				value := &dns.SVCBECHConfig{
-					ECH: echConfig,
-				}
-				https.Value = append(https.Value, value)
-				continue
 			}
 		}
 	}
