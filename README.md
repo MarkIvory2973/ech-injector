@@ -4,6 +4,16 @@ Inject ECH configuration while querying HTTPS RR.
 
 ## Installation
 
+### Deploy to Cloudflare
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/MarkIvory2973/ech-injector)
+
+Set build variables:
+
+|Name|Description|
+|:-:|:-:|
+|KV_NAMESPACE_ID|Cloudflare KV namespace ID used to store cached data for the Worker.
+
 ### Deploy from source
 
 #### Requirements
@@ -34,14 +44,8 @@ wrangler kv namespace create ech-injector
 Deploy worker:
 
 ```bash
-KV_NAMESPACE_ID=<your-kv-namespace-id> npm run deploy
-```
-
-Set build variables (Optional):
-
-|Name|Description|
-|:-:|:-:|
-|KV_NAMESPACE_ID|Cloudflare KV namespace ID used to store cached data for the Worker.|
+KV_NAMESPACE_ID=<kv-namespace-id> npm run deploy
+```|
 
 ## Usage
 
