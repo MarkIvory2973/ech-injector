@@ -2,7 +2,6 @@ package workers
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/syumai/workers/cloudflare/kv"
@@ -51,14 +50,14 @@ func GetCache(key string) (Cache, bool, error) {
 		return Cache{}, false, err
 	}
 
-	if value == "" {
+	if value == "<null>" || value == "" {
 		return Cache{}, false, nil
 	}
 
 	var cache Cache
 	err = json.Unmarshal([]byte(value), &cache)
 	if err != nil {
-		return Cache{}, false, fmt.Errorf(value)
+		return Cache{}, false, err
 	}
 
 	return cache, true, nil
