@@ -102,6 +102,7 @@ func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
 					},
 				}
 				dnsAnwser.Answer = append(dnsAnwser.Answer, resourceRecord)
+				continue
 			}
 
 			yes, err = cidrs.IsMeta(context, question.Name)
@@ -131,6 +132,7 @@ func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
 					},
 				}
 				dnsAnwser.Answer = append(dnsAnwser.Answer, resourceRecord)
+				continue
 			}
 		}
 	}
