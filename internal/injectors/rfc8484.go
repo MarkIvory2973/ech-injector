@@ -2,10 +2,10 @@ package injectors
 
 import (
 	"context"
-	"encoding/base64"
-	"fmt"
 	"ech-injector/pkg/cidrs"
 	"ech-injector/pkg/resolvers"
+	"encoding/base64"
+	"fmt"
 
 	"github.com/miekg/dns"
 )
