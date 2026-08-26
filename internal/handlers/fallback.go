@@ -32,6 +32,8 @@ security features and capabilities please refer to
 
 func HandleFallback() {
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		writer.Header().Set("Content-Type", "text/html")
+		writer.Header().Set("Server", "nginx")
 		writer.WriteHeader(http.StatusOK)
 		writer.Write([]byte(fallback))
 	})
