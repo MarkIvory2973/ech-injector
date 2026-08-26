@@ -20,7 +20,7 @@ func (cache Cache) IsExpired() bool {
 
 func init() {
 	var err error
-	namespace, err = kv.NewNamespace("ech-injector")
+	namespace, err = kv.NewNamespace("cache")
 	if err != nil {
 		panic(err)
 	}

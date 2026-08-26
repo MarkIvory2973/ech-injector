@@ -12,7 +12,7 @@
 	"upload_source_maps": true,
 	"kv_namespaces": [
 		{
-			"binding": "ech-injector",
+			"binding": "cache",
 			"id": "${KV_NAMESPACE_ID}",
 		}
 	],
