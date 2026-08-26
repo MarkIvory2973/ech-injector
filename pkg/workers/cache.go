@@ -15,7 +15,7 @@ type Cache struct {
 }
 
 func (cache Cache) IsExpired() bool {
-	return time.Now().After(cache.Expire)
+	return time.Now().UTC().After(cache.Expire)
 }
 
 func init() {
@@ -29,7 +29,7 @@ func init() {
 func SetCache(key string, content map[string]string) error {
 	cache := Cache{
 		Content: content,
-		Expire:  time.Now().Add(1 * time.Hour),
+		Expire:  time.Now().UTC().Add(1 * time.Hour),
 	}
 	value, err := json.Marshal(cache)
 	if err != nil {
@@ -80,7 +80,7 @@ func GetCacheFunc(key string, handler func() (map[string]string, error)) (map[st
 
 	cache = Cache{
 		Content: content,
-		Expire:  time.Now().Add(1 * time.Hour),
+		Expire:  time.Now().UTC().Add(1 * time.Hour),
 	}
 	value, err := json.Marshal(cache)
 	if err != nil {
