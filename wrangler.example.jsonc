@@ -1,0 +1,19 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "ech-injector",
+	"main": "./build/worker.mjs",
+	"compatibility_date": "2026-08-20",
+	"build": {
+		"command": "npm run build"
+	},
+	"observability": {
+		"enabled": false
+	},
+	"upload_source_maps": true,
+	"kv_namespaces": [
+		{
+			"binding": "ech-injector",
+			"id": "${KV_NAMESPACE_ID}",
+		}
+	],
+}

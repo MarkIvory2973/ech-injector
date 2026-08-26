@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"ech-injector/internal/injectors"
 	"encoding/base64"
 	"io"
 	"net/http"
-	"ech-injector/internal/injectors"
 )
 
 func HandleRFC8484() {

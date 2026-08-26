@@ -25,16 +25,16 @@ Install dependencies:
 npm install
 ```
 
-Build binaries:
+Create KV namspace:
 
 ```bash
-npm run build
+wrangler kv namespace create ech-injector
 ```
 
 Deploy worker:
 
 ```bash
-npm run deploy
+KV_NAMESPACE_ID=<your-kv-namespace-id> npm run deploy
 ```
 
 ## Usage

@@ -5,30 +5,9 @@ import (
 	"ech-injector/pkg/cidrs"
 	"ech-injector/pkg/resolvers"
 	"encoding/base64"
-	"fmt"
 
 	"github.com/miekg/dns"
 )
-
-func getECHConfig(context context.Context, name string) ([]byte, error) {
-	svcbs, err := resolvers.ResolveHTTPS(context, name)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, value := range svcbs[0] {
-		svcbECHConfig, ok := value.(*dns.SVCBECHConfig)
-		if !ok {
-			continue
-		}
-
-		echConfig := svcbECHConfig.ECH
-
-		return echConfig, err
-	}
-
-	return nil, fmt.Errorf("ECH not found")
-}
 
 func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
 	dnsQuestion, err := resolvers.UnpackMessage(content)
