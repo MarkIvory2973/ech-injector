@@ -37,6 +37,12 @@ Deploy worker:
 KV_NAMESPACE_ID=<your-kv-namespace-id> npm run deploy
 ```
 
+Set build variables (Optional):
+
+|Name|Description|
+|:-:|:-:|
+|KV_NAMESPACE_ID|Cloudflare KV namespace ID used to store cached data for the Worker.|
+
 ## Usage
 
 Set the DoH provider to: 
