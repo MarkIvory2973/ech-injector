@@ -63,7 +63,7 @@ func GetCache(key string) (Cache, bool, error) {
 	return cache, true, nil
 }
 
-func GetCacheFunc(key string, handler func() (map[string]string, error)) (map[string]string, error) {
+func CacheFunc(key string, handler func() (map[string]string, error)) (map[string]string, error) {
 	cache, exists, err := GetCache(key)
 	if err != nil {
 		return nil, err

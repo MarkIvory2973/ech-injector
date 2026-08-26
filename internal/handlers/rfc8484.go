@@ -34,7 +34,7 @@ func HandleRFC8484() {
 			return
 		}
 
-		content, err = injectors.InjectRFC8484(request.Context(), content)
+		content, err = injectors.InjectDNSMessage(request.Context(), content)
 		if err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			writer.Write([]byte(err.Error()))

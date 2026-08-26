@@ -10,7 +10,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
+func InjectDNSMessage(context context.Context, content []byte) ([]byte, error) {
 	dnsQuestion, err := resolvers.UnpackMessage(content)
 	if err != nil {
 		return nil, err

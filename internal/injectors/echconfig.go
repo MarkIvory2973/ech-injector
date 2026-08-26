@@ -11,7 +11,7 @@ import (
 )
 
 func getECHConfig(context context.Context, name string) ([]byte, error) {
-	content, err := workers.GetCacheFunc(name, func() (map[string]string, error) {
+	content, err := workers.CacheFunc(name, func() (map[string]string, error) {
 		svcbs, err := resolvers.ResolveHTTPS(context, name)
 		if err != nil {
 			return nil, err
