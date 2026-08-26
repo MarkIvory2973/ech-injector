@@ -4,6 +4,7 @@ import (
 	"context"
 	"ech-injector/pkg/resolvers"
 	"net/netip"
+	"slices"
 )
 
 func contains(context context.Context, prefixes []netip.Prefix, name string) (bool, error) {
@@ -24,13 +25,9 @@ func contains(context context.Context, prefixes []netip.Prefix, name string) (bo
 		return false, err
 	}
 
-	for _, prefix := range prefixes {
-		if !prefix.Contains(address) {
-			continue
-		}
+	yes := slices.ContainsFunc(prefixes, func(prefix netip.Prefix) bool {
+		return prefix.Contains(address)
+	})
 
-		return true, nil
-	}
-
-	return false, nil
+	return yes, nil
 }

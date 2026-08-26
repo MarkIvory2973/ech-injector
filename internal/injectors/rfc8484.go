@@ -5,6 +5,7 @@ import (
 	"ech-injector/pkg/cidrs"
 	"ech-injector/pkg/resolvers"
 	"encoding/base64"
+	"slices"
 
 	"github.com/miekg/dns"
 )
@@ -89,20 +90,10 @@ func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
 			}
 		}
 
-		hasValidECHConfig := false
-		for _, value := range https.Value {
+		hasValidECHConfig := slices.ContainsFunc(https.Value, func(value dns.SVCBKeyValue) bool {
 			svcbECHConfig, ok := value.(*dns.SVCBECHConfig)
-			if !ok {
-				continue
-			}
-
-			if len(svcbECHConfig.ECH) == 0 {
-				continue
-			}
-
-			hasValidECHConfig = true
-		}
-
+			return ok && len(svcbECHConfig.ECH) != 0
+		})
 		if !hasValidECHConfig {
 			yes, err := cidrs.IsCloudflare(context, https.Hdr.Name)
 			if err != nil {
@@ -119,6 +110,7 @@ func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
 					ECH: echConfig,
 				}
 				https.Value = append(https.Value, value)
+				continue
 			}
 
 			yes, err = cidrs.IsMeta(context, https.Hdr.Name)
@@ -136,6 +128,7 @@ func InjectRFC8484(context context.Context, content []byte) ([]byte, error) {
 					ECH: echConfig,
 				}
 				https.Value = append(https.Value, value)
+				continue
 			}
 		}
 	}
