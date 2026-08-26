@@ -78,16 +78,7 @@ func GetCacheFunc(key string, handler func() (map[string]string, error)) (map[st
 		return nil, err
 	}
 
-	cache = Cache{
-		Content: content,
-		Expire:  time.Now().UTC().Add(1 * time.Hour),
-	}
-	value, err := json.Marshal(cache)
-	if err != nil {
-		return nil, err
-	}
-
-	err = namespace.PutString(key, string(value), nil)
+	err = SetCache(key, content)
 	if err != nil {
 		return nil, err
 	}
