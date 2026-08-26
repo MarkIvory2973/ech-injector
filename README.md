@@ -12,7 +12,7 @@ Set build variables:
 
 |Name|Description|
 |:-:|:-:|
-|KV_NAMESPACE_ID|Cloudflare KV namespace ID used to store cached data for the Worker.
+|KV_NAMESPACE_ID|Cloudflare KV namespace ID used to store cached data for the Worker.|
 
 ### Deploy from source
 
@@ -45,7 +45,7 @@ Deploy worker:
 
 ```bash
 KV_NAMESPACE_ID=<kv-namespace-id> npm run deploy
-```|
+```
 
 ## Usage
 
