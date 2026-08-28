@@ -17,18 +17,20 @@ func getECHConfig(context context.Context, name string) ([]byte, error) {
 			return nil, err
 		}
 
-		for _, value := range svcbs[0] {
-			svcbECHConfig, ok := value.(*dns.SVCBECHConfig)
-			if !ok {
-				continue
-			}
+		for _, svcb := range svcbs {
+			for _, value := range svcb {
+				svcbECHConfig, ok := value.(*dns.SVCBECHConfig)
+				if !ok {
+					continue
+				}
 
-			echConfig := base64.StdEncoding.EncodeToString(svcbECHConfig.ECH)
-			content := map[string]string{
-				"echConfig": echConfig,
-			}
+				echConfig := base64.StdEncoding.EncodeToString(svcbECHConfig.ECH)
+				content := map[string]string{
+					"echConfig": echConfig,
+				}
 
-			return content, err
+				return content, err
+			}
 		}
 
 		return nil, fmt.Errorf("ECH config not found")
