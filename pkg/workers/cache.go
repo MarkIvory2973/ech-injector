@@ -2,22 +2,11 @@ package workers
 
 import (
 	"encoding/json"
-	"reflect"
-	"time"
 
 	"github.com/syumai/workers/cloudflare/kv"
 )
 
 var namespace *kv.Namespace
-
-type Cache struct {
-	Cached map[string]string `json:"cached"`
-	Expire time.Time         `json:"Expire"`
-}
-
-func (cache Cache) IsExpired() bool {
-	return time.Now().UTC().After(cache.Expire)
-}
 
 func init() {
 	var err error
@@ -27,17 +16,15 @@ func init() {
 	}
 }
 
-func SetCache(key string, cached map[string]string, ttl time.Duration) error {
-	cache := Cache{
-		Cached: cached,
-		Expire: time.Now().UTC().Add(ttl),
-	}
-	value, err := json.Marshal(cache)
+func SetCache(key string, cached map[string]string, ttl int) error {
+	value, err := json.Marshal(cached)
 	if err != nil {
 		return err
 	}
 
-	err = namespace.PutString(key, string(value), nil)
+	err = namespace.PutString(key, string(value), &kv.PutOptions{
+		ExpirationTTL: ttl,
+	})
 	if err != nil {
 		return err
 	}
@@ -45,33 +32,33 @@ func SetCache(key string, cached map[string]string, ttl time.Duration) error {
 	return nil
 }
 
-func GetCache(key string) (Cache, error) {
+func GetCache(key string) (map[string]string, error) {
 	value, err := namespace.GetString(key, nil)
-	if err != nil {
-		return Cache{}, err
-	}
-
-	if value == "<null>" || value == "" {
-		return Cache{}, nil
-	}
-
-	var cache Cache
-	err = json.Unmarshal([]byte(value), &cache)
-	if err != nil {
-		return Cache{}, err
-	}
-
-	return cache, nil
-}
-
-func CacheFunc(key string, handler func() (map[string]string, time.Duration, error)) (map[string]string, error) {
-	cache, err := GetCache(key)
 	if err != nil {
 		return nil, err
 	}
 
-	if reflect.ValueOf(cache).IsZero() && !cache.IsExpired() {
-		return cache.Cached, nil
+	if value == "<null>" || value == "" {
+		return nil, nil
+	}
+
+	var cached map[string]string
+	err = json.Unmarshal([]byte(value), &cached)
+	if err != nil {
+		return nil, err
+	}
+
+	return cached, nil
+}
+
+func CacheFunc(key string, handler func() (map[string]string, int, error)) (map[string]string, error) {
+	cached, err := GetCache(key)
+	if err != nil {
+		return nil, err
+	}
+
+	if cached != nil {
+		return cached, nil
 	}
 
 	cached, ttl, err := handler()

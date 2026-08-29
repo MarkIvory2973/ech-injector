@@ -38,7 +38,7 @@ func ExchangeMessage(context context.Context, dnsQuestion *dns.Msg) (*dns.Msg, e
 
 	checksum := sha256.Sum256(content)
 	key := hex.EncodeToString(checksum[:])
-	cached, err := workers.CacheFunc(key, func() (map[string]string, time.Duration, error) {
+	cached, err := workers.CacheFunc(key, func() (map[string]string, int, error) {
 		httpRequest := workers.HTTPRequest{
 			Method:  "POST",
 			Scheme:  "https",
@@ -73,7 +73,7 @@ func ExchangeMessage(context context.Context, dnsQuestion *dns.Msg) (*dns.Msg, e
 			}
 		}
 
-		return cached, minTTL, nil
+		return cached, int(minTTL), nil
 	})
 
 	content, err = base64.StdEncoding.DecodeString(cached["response"])
