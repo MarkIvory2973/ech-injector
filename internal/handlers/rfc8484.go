@@ -22,7 +22,8 @@ func HandleRFC8484() {
 
 			content, err = base64.RawURLEncoding.DecodeString(dns)
 		case "POST":
-			content, err = io.ReadAll(request.Body)
+			body := http.MaxBytesReader(writer, request.Body, 65536)
+			content, err = io.ReadAll(body)
 		default:
 			writer.WriteHeader(http.StatusMethodNotAllowed)
 			return
