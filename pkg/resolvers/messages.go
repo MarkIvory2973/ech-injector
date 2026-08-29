@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"ech-injector/pkg/workers"
+	"encoding/base64"
 	"encoding/hex"
 	"time"
 
@@ -56,7 +57,7 @@ func ExchangeMessage(context context.Context, dnsQuestion *dns.Msg) (*dns.Msg, e
 		}
 
 		cached := map[string]string{
-			"response": hex.EncodeToString(content),
+			"response": base64.StdEncoding.EncodeToString(content),
 		}
 
 		dnsAnwser, err := UnpackMessage(content)
@@ -75,7 +76,7 @@ func ExchangeMessage(context context.Context, dnsQuestion *dns.Msg) (*dns.Msg, e
 		return cached, minTTL, nil
 	})
 
-	content, err = hex.DecodeString(cached["response"])
+	content, err = base64.StdEncoding.DecodeString(cached["response"])
 	if err != nil {
 		return nil, err
 	}
