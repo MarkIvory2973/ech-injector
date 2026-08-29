@@ -1,6 +1,6 @@
 {
   "name": "ech-injector",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "scripts": {
     "build": "go run github.com/syumai/workers/cmd/workers-assets-gen -mode=go && GOOS=js GOARCH=wasm go build -trimpath -ldflags=\"-s -w\" -o ./build/app.wasm . && envsubst < wrangler.example.jsonc > wrangler.jsonc",
