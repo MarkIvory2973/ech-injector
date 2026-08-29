@@ -75,6 +75,9 @@ func ExchangeMessage(context context.Context, dnsQuestion *dns.Msg) (*dns.Msg, e
 
 		return cached, minTTL, nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	content, err = base64.StdEncoding.DecodeString(cached["response"])
 	if err != nil {
