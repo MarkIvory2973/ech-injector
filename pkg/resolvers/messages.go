@@ -2,7 +2,10 @@ package resolvers
 
 import (
 	"context"
+	"crypto/sha256"
 	"ech-injector/pkg/workers"
+	"encoding/hex"
+	"time"
 
 	"github.com/miekg/dns"
 )
@@ -32,19 +35,47 @@ func ExchangeMessage(context context.Context, dnsQuestion *dns.Msg) (*dns.Msg, e
 		return nil, err
 	}
 
-	httpRequest := workers.HTTPRequest{
-		Method:  "POST",
-		Scheme:  "https",
-		Host:    host,
-		Path:    path,
-		Queries: map[string]string{},
-		Headers: map[string]string{
-			"Content-Type": "application/dns-message",
-			"Accept":       "application/dns-message",
-		},
-		Content: content,
-	}
-	content, err = workers.Fetch(context, httpRequest)
+	checksum := sha256.Sum256(content)
+	key := hex.EncodeToString(checksum[:])
+	cached, err := workers.CacheFunc(key, func() (map[string]string, time.Duration, error) {
+		httpRequest := workers.HTTPRequest{
+			Method:  "POST",
+			Scheme:  "https",
+			Host:    host,
+			Path:    path,
+			Queries: map[string]string{},
+			Headers: map[string]string{
+				"Content-Type": "application/dns-message",
+				"Accept":       "application/dns-message",
+			},
+			Content: content,
+		}
+		content, err = workers.Fetch(context, httpRequest)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		cached := map[string]string{
+			"response": hex.EncodeToString(content),
+		}
+
+		dnsAnwser, err := UnpackMessage(content)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		var minTTL time.Duration
+		for _, resourceRecord := range dnsAnwser.Answer {
+			ttl := time.Duration(resourceRecord.Header().Ttl) * time.Second
+			if minTTL == 0 || ttl < minTTL {
+				minTTL = ttl
+			}
+		}
+
+		return cached, minTTL, nil
+	})
+
+	content, err = hex.DecodeString(cached["response"])
 	if err != nil {
 		return nil, err
 	}
