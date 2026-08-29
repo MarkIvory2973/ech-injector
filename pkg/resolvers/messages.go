@@ -6,7 +6,6 @@ import (
 	"ech-injector/pkg/workers"
 	"encoding/base64"
 	"encoding/hex"
-	"time"
 
 	"github.com/miekg/dns"
 )
@@ -31,6 +30,9 @@ func UnpackMessage(content []byte) (*dns.Msg, error) {
 }
 
 func ExchangeMessage(context context.Context, dnsQuestion *dns.Msg) (*dns.Msg, error) {
+	id := dnsQuestion.Id
+	dnsQuestion.Id = 0
+
 	content, err := PackMessage(dnsQuestion)
 	if err != nil {
 		return nil, err
@@ -38,7 +40,7 @@ func ExchangeMessage(context context.Context, dnsQuestion *dns.Msg) (*dns.Msg, e
 
 	checksum := sha256.Sum256(content)
 	key := hex.EncodeToString(checksum[:])
-	cached, err := workers.CacheFunc(key, func() (map[string]string, time.Duration, error) {
+	cache, err := workers.CacheFunc(key, func() (map[string]string, int, error) {
 		httpRequest := workers.HTTPRequest{
 			Method:  "POST",
 			Scheme:  "https",
@@ -56,8 +58,8 @@ func ExchangeMessage(context context.Context, dnsQuestion *dns.Msg) (*dns.Msg, e
 			return nil, 0, err
 		}
 
-		cached := map[string]string{
-			"response": base64.StdEncoding.EncodeToString(content),
+		cache := map[string]string{
+			"answer": base64.StdEncoding.EncodeToString(content),
 		}
 
 		dnsAnwser, err := UnpackMessage(content)
@@ -65,21 +67,21 @@ func ExchangeMessage(context context.Context, dnsQuestion *dns.Msg) (*dns.Msg, e
 			return nil, 0, err
 		}
 
-		var minTTL time.Duration
+		var minTTL int
 		for _, resourceRecord := range dnsAnwser.Answer {
-			ttl := time.Duration(resourceRecord.Header().Ttl) * time.Second
+			ttl := int(resourceRecord.Header().Ttl)
 			if minTTL == 0 || ttl < minTTL {
 				minTTL = ttl
 			}
 		}
 
-		return cached, minTTL, nil
+		return cache, minTTL, nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	content, err = base64.StdEncoding.DecodeString(cached["response"])
+	content, err = base64.StdEncoding.DecodeString(cache["answer"])
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +90,8 @@ func ExchangeMessage(context context.Context, dnsQuestion *dns.Msg) (*dns.Msg, e
 	if err != nil {
 		return nil, err
 	}
+
+	dnsAnswer.Id = id
 
 	return dnsAnswer, nil
 }

@@ -2,22 +2,11 @@ package workers
 
 import (
 	"encoding/json"
-	"reflect"
-	"time"
 
 	"github.com/syumai/workers/cloudflare/kv"
 )
 
 var namespace *kv.Namespace
-
-type Cache struct {
-	Cached map[string]string `json:"cached"`
-	Expire time.Time         `json:"Expire"`
-}
-
-func (cache Cache) IsExpired() bool {
-	return time.Now().UTC().After(cache.Expire)
-}
 
 func init() {
 	var err error
@@ -27,17 +16,15 @@ func init() {
 	}
 }
 
-func SetCache(key string, cached map[string]string, ttl time.Duration) error {
-	cache := Cache{
-		Cached: cached,
-		Expire: time.Now().UTC().Add(ttl),
-	}
+func SetCache(key string, cache map[string]string, expirationTTL int) error {
 	value, err := json.Marshal(cache)
 	if err != nil {
 		return err
 	}
 
-	err = namespace.PutString(key, string(value), nil)
+	err = namespace.PutString(key, string(value), &kv.PutOptions{
+		ExpirationTTL: expirationTTL,
+	})
 	if err != nil {
 		return err
 	}
@@ -45,44 +32,44 @@ func SetCache(key string, cached map[string]string, ttl time.Duration) error {
 	return nil
 }
 
-func GetCache(key string) (Cache, error) {
+func GetCache(key string) (map[string]string, error) {
 	value, err := namespace.GetString(key, nil)
 	if err != nil {
-		return Cache{}, err
+		return nil, err
 	}
 
 	if value == "<null>" || value == "" {
-		return Cache{}, nil
+		return nil, nil
 	}
 
-	var cache Cache
+	var cache map[string]string
 	err = json.Unmarshal([]byte(value), &cache)
 	if err != nil {
-		return Cache{}, err
+		return nil, err
 	}
 
 	return cache, nil
 }
 
-func CacheFunc(key string, handler func() (map[string]string, time.Duration, error)) (map[string]string, error) {
+func CacheFunc(key string, handler func() (map[string]string, int, error)) (map[string]string, error) {
 	cache, err := GetCache(key)
 	if err != nil {
 		return nil, err
 	}
 
-	if reflect.ValueOf(cache).IsZero() && !cache.IsExpired() {
-		return cache.Cached, nil
+	if len(cache) != 0 {
+		return cache, nil
 	}
 
-	cached, ttl, err := handler()
+	cache, expirationTTL, err := handler()
 	if err != nil {
 		return nil, err
 	}
 
-	err = SetCache(key, cached, ttl)
+	err = SetCache(key, cache, expirationTTL)
 	if err != nil {
 		return nil, err
 	}
 
-	return cached, nil
+	return cache, nil
 }
