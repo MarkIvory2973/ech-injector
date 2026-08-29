@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"ech-injector/internal/injectors"
+	"ech-injector/pkg/logs"
 	"encoding/base64"
 	"io"
 	"net/http"
@@ -30,15 +31,15 @@ func HandleRFC8484() {
 		}
 
 		if err != nil {
+			logs.Warning("handlers.HandleRFC8484", "couldn't handle HTTP request", err)
 			writer.WriteHeader(http.StatusBadRequest)
-			writer.Write([]byte(err.Error()))
 			return
 		}
 
 		content, err = injectors.InjectDNSMessage(request.Context(), content)
 		if err != nil {
+			logs.Fatal("injectors.InjectDNSMessage", "couldn't inject ECH configuration into DNS message", err)
 			writer.WriteHeader(http.StatusInternalServerError)
-			writer.Write([]byte(err.Error()))
 			return
 		}
 
