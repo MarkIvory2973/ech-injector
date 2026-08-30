@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+// TODO
 func HandleJSON() {
 	http.HandleFunc("/resolve", func(writer http.ResponseWriter, request *http.Request) {
 		if request.Method != http.MethodGet {

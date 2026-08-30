@@ -10,6 +10,7 @@ import (
 const hostJSON = "dns.google"
 const pathJSON = "/resolve"
 
+// TODO
 func Resolve(context context.Context, queries map[string]string) (map[string]any, error) {
 	httpRequest := workers.HTTPRequest{
 		Method:  http.MethodGet,
