@@ -2,23 +2,12 @@ package injectors
 
 import (
 	"context"
-	"ech-injector/pkg/resolvers"
 	"slices"
 
 	"github.com/miekg/dns"
 )
 
-func InjectDNSMessage(context context.Context, content []byte) ([]byte, error) {
-	dnsQuestion, err := resolvers.UnpackMessage(content)
-	if err != nil {
-		return nil, err
-	}
-
-	dnsAnswer, err := resolvers.ExchangeMessage(context, dnsQuestion)
-	if err != nil {
-		return nil, err
-	}
-
+func InjectRFC8484(context context.Context, dnsQuestion *dns.Msg, dnsAnswer *dns.Msg) error {
 	for _, question := range dnsQuestion.Question {
 		if question.Qtype != dns.TypeHTTPS {
 			continue
@@ -68,15 +57,10 @@ func InjectDNSMessage(context context.Context, content []byte) ([]byte, error) {
 		if !hasValidECHConfig {
 			err := setECHConfig(context, https)
 			if err != nil {
-				return nil, err
+				return err
 			}
 		}
 	}
 
-	content, err = resolvers.PackMessage(dnsAnswer)
-	if err != nil {
-		return nil, err
-	}
-
-	return content, nil
+	return nil
 }

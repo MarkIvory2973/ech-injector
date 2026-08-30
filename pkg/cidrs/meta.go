@@ -2,7 +2,9 @@ package cidrs
 
 import (
 	"context"
+	"ech-injector/pkg/logs"
 	"net/netip"
+	"os"
 )
 
 var metaCidrs = []string{
@@ -122,7 +124,8 @@ func init() {
 	for _, metaCidr := range metaCidrs {
 		metaPrefix, err := netip.ParsePrefix(metaCidr)
 		if err != nil {
-			panic(err)
+			logs.Fatal("cidrs.init", "couldn't initalize Meta CIDRs", err)
+			os.Exit(1)
 		}
 
 		metaPrefixes = append(metaPrefixes, metaPrefix)

@@ -2,7 +2,9 @@ package cidrs
 
 import (
 	"context"
+	"ech-injector/pkg/logs"
 	"net/netip"
+	"os"
 )
 
 var cloudflareCidrs = []string{
@@ -35,7 +37,8 @@ func init() {
 	for _, cloudflareCidr := range cloudflareCidrs {
 		cloudflarePrefix, err := netip.ParsePrefix(cloudflareCidr)
 		if err != nil {
-			panic(err)
+			logs.Fatal("cidrs.init", "couldn't initalize Cloudflare CIDRs", err)
+			os.Exit(1)
 		}
 
 		cloudflarePrefixes = append(cloudflarePrefixes, cloudflarePrefix)
