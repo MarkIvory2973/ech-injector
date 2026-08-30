@@ -2,6 +2,7 @@ package injectors
 
 import (
 	"context"
+	"ech-injector/pkg/cidrs"
 	"ech-injector/pkg/resolvers"
 	"ech-injector/pkg/workers"
 	"encoding/base64"
@@ -45,4 +46,44 @@ func getECHConfig(context context.Context, name string) ([]byte, error) {
 	}
 
 	return echConfig, nil
+}
+
+func setECHConfig(context context.Context, https *dns.HTTPS) error {
+	yes, err := cidrs.IsCloudflare(context, https.Hdr.Name)
+	if err != nil {
+		return err
+	}
+
+	if yes {
+		echConfig, err := getECHConfig(context, "cloudflare-ech.com.")
+		if err != nil {
+			return err
+		}
+
+		value := &dns.SVCBECHConfig{
+			ECH: echConfig,
+		}
+		https.Value = append(https.Value, value)
+		return nil
+	}
+
+	yes, err = cidrs.IsMeta(context, https.Hdr.Name)
+	if err != nil {
+		return err
+	}
+
+	if yes {
+		echConfig, err := base64.StdEncoding.DecodeString("AEj+DQBEAQAgACAdd+scUi0IYFsXnUIU7ko2Nd9+F8M26pAGZVpz/KrWPgAEAAEAAWQVZWNoLXB1YmxpYy5hdG1ldGEuY29tAAA=")
+		if err != nil {
+			return err
+		}
+
+		value := &dns.SVCBECHConfig{
+			ECH: echConfig,
+		}
+		https.Value = append(https.Value, value)
+		return nil
+	}
+
+	return nil
 }

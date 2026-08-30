@@ -19,13 +19,13 @@ func ResolveA(context context.Context, name string) ([]string, error) {
 	dnsQuestion := new(dns.Msg)
 	dnsQuestion.SetQuestion(name, dns.TypeA)
 
-	dnsAnwser, err := ExchangeMessage(context, dnsQuestion)
+	dnsAnswer, err := ExchangeMessage(context, dnsQuestion)
 	if err != nil {
 		return nil, err
 	}
 
 	var ips []string
-	for _, resourceRecord := range dnsAnwser.Answer {
+	for _, resourceRecord := range dnsAnswer.Answer {
 		a, ok := resourceRecord.(*dns.A)
 		if !ok {
 			continue
@@ -42,13 +42,13 @@ func ResolveAAAA(context context.Context, name string) ([]string, error) {
 	dnsQuestion := new(dns.Msg)
 	dnsQuestion.SetQuestion(name, dns.TypeAAAA)
 
-	dnsAnwser, err := ExchangeMessage(context, dnsQuestion)
+	dnsAnswer, err := ExchangeMessage(context, dnsQuestion)
 	if err != nil {
 		return nil, err
 	}
 
 	var ips []string
-	for _, resourceRecord := range dnsAnwser.Answer {
+	for _, resourceRecord := range dnsAnswer.Answer {
 		aaaa, ok := resourceRecord.(*dns.AAAA)
 		if !ok {
 			continue
@@ -65,13 +65,13 @@ func ResolveHTTPS(context context.Context, name string) ([][]dns.SVCBKeyValue, e
 	dnsQuestion := new(dns.Msg)
 	dnsQuestion.SetQuestion(name, dns.TypeHTTPS)
 
-	dnsAnwser, err := ExchangeMessage(context, dnsQuestion)
+	dnsAnswer, err := ExchangeMessage(context, dnsQuestion)
 	if err != nil {
 		return nil, err
 	}
 
 	var svcbs [][]dns.SVCBKeyValue
-	for _, resourceRecord := range dnsAnwser.Answer {
+	for _, resourceRecord := range dnsAnswer.Answer {
 		https, ok := resourceRecord.(*dns.HTTPS)
 		if !ok {
 			continue

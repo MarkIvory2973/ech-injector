@@ -14,15 +14,10 @@ func HandleRFC8484() {
 		var err error
 
 		switch request.Method {
-		case "GET":
+		case http.MethodGet:
 			dns := request.URL.Query().Get("dns")
-			if dns == "" {
-				writer.WriteHeader(http.StatusBadRequest)
-				return
-			}
-
 			content, err = base64.RawURLEncoding.DecodeString(dns)
-		case "POST":
+		case http.MethodPost:
 			body := http.MaxBytesReader(writer, request.Body, 65536)
 			content, err = io.ReadAll(body)
 		default:
