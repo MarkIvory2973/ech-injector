@@ -2,14 +2,14 @@ package cidrs
 
 import (
 	"context"
-	"ech-injector/pkg/resolvers"
+	"ech-injector/pkg/rfc8484"
 	"net/netip"
 )
 
 func contains(context context.Context, prefixes []netip.Prefix, name string) (bool, error) {
-	ips, err := resolvers.ResolveA(context, name)
+	ips, err := rfc8484.ExchangeA(context, name)
 	if err != nil || len(ips) == 0 {
-		ips, err = resolvers.ResolveAAAA(context, name)
+		ips, err = rfc8484.ExchangeAAAA(context, name)
 		if err != nil {
 			return false, err
 		} else if len(ips) == 0 {

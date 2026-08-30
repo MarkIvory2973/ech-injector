@@ -8,6 +8,7 @@ import (
 
 func main() {
 	handlers.HandleRFC8484()
+	handlers.HandleJSON()
 	handlers.HandleFallback()
 	workers.Serve(nil)
 }

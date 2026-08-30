@@ -49,7 +49,7 @@ func HandleRFC8484() {
 
 		err = injectors.InjectRFC8484(request.Context(), dnsQuestion, dnsAnswer)
 		if err != nil {
-			logs.Warning("injectors.InjectDNSMessage", "couldn't inject ECH configuration into the DNS message", err)
+			logs.Warning("injectors.InjectRFC8484", "couldn't inject ECH configuration into the DNS message", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
