@@ -3,7 +3,7 @@ package injectors
 import (
 	"context"
 	"ech-injector/pkg/cidrs"
-	"ech-injector/pkg/rfc8484"
+	"ech-injector/pkg/resolvers"
 	"ech-injector/pkg/workers"
 	"encoding/base64"
 	"fmt"
@@ -13,7 +13,7 @@ import (
 
 func getECHConfig(context context.Context, name string) ([]byte, error) {
 	content, err := workers.CacheFunc(name, func() (map[string]string, int, error) {
-		svcbs, err := rfc8484.ExchangeHTTPS(context, name)
+		svcbs, err := resolvers.ExchangeHTTPS(context, name)
 		if err != nil {
 			return nil, 0, err
 		}
